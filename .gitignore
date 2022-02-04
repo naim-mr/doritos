@@ -11,3 +11,4 @@ test/sort
 **/*.a
 SWAPDISK
 DISK
+.vscode/
