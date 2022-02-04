@@ -142,6 +142,7 @@ Semaphore::P() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     if (this->value == 0) {
@@ -151,7 +152,7 @@ Semaphore::P() {
         this->value--;
     }
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
 
@@ -180,6 +181,7 @@ Semaphore::V() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     this->value++;
@@ -188,7 +190,7 @@ Semaphore::V() {
 
     g_scheduler->ReadyToRun(toWake);
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
 
@@ -271,6 +273,7 @@ void Lock::Acquire() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     if (!this->free) {
@@ -281,7 +284,7 @@ void Lock::Acquire() {
         this->owner = g_current_thread;
     }
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
 
@@ -311,6 +314,7 @@ void Lock::Release() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     this->free = true;
@@ -320,7 +324,7 @@ void Lock::Release() {
 
     g_scheduler->ReadyToRun(toWake);
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
 
@@ -402,12 +406,13 @@ void Condition::Wait() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     waitqueue->Append(g_current_thread);
     g_current_thread->Sleep();
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
 
@@ -431,13 +436,14 @@ void Condition::Signal() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     Thread *toWake = (Thread *)(*(int *)(waitqueue->Remove()));
 
     g_scheduler->ReadyToRun(toWake);
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
 
@@ -460,6 +466,7 @@ void Condition::Broadcast() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     while (!waitqueue->IsEmpty()) {
@@ -468,6 +475,6 @@ void Condition::Broadcast() {
         g_scheduler->ReadyToRun(toWake);
     }
 
-    g_machine->interrupt->SetStatus(INTERRUPTS_ON);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
