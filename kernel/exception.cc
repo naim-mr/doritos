@@ -467,14 +467,23 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
 #ifdef ETUDIANTS_TP
                 case SC_P: {
-					
                     DEBUG('e', (char *)"Semaphore : P.\n");
 
                     Semaphore *pSem;
                     int sem_id = g_machine->ReadIntRegister(4);
                     pSem = (Semaphore *)g_object_ids->SearchObject(sem_id);
 
-                    pSem->P();
+                    if (pSem && pSem->type == SEMAPHORE_TYPE) {
+                        pSem->P();
+
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
@@ -485,7 +494,16 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     int sem_id = g_machine->ReadIntRegister(4);
                     vSem = (Semaphore *)g_object_ids->SearchObject(sem_id);
 
-                    vSem->V();
+                    if (vSem && vSem->type == SEMAPHORE_TYPE) {
+                        vSem->V();
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
@@ -514,43 +532,188 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     int sem_id = g_machine->ReadIntRegister(4);
                     sem = (Semaphore *)g_object_ids->SearchObject(sem_id);
 
-                    delete sem;
+                    if (sem && sem->type == SEMAPHORE_TYPE) {
+                        delete sem;
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_LOCK_CREATE: {
+                    DEBUG('e', (char *)"Lock : Create.\n");
+
+                    Lock *lock;
+                    int name_addr = g_machine->ReadIntRegister(4);
+
+                    int size = GetLengthParam(name_addr);
+
+                    char lock_name[size];
+
+                    GetStringParam(name_addr, lock_name, size);
+
+                    lock = new Lock(lock_name);
+                    g_object_ids->AddObject(lock);
                     break;
                 }
 
                 case SC_LOCK_DESTROY: {
+                    DEBUG('e', (char *)"Lock : Destroy.\n");
+
+                    Lock *lock;
+                    int lock_id = g_machine->ReadIntRegister(4);
+                    lock = (Lock *)g_object_ids->SearchObject(lock_id);
+                    if (lock && lock->type == LOCK_TYPE) {
+                        delete lock;
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_LOCK_ACQUIRE: {
+                    DEBUG('e', (char *)"Lock : Acquire.\n");
+
+                    Lock *lock;
+                    int lock_id = g_machine->ReadIntRegister(4);
+                    lock = (Lock *)g_object_ids->SearchObject(lock_id);
+
+                    if (lock && lock->type == LOCK_TYPE) {
+                        lock->Acquire();
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_LOCK_RELEASE: {
+                    DEBUG('e', (char *)"Lock : Release.\n");
+
+                    Lock *lock;
+                    int lock_id = g_machine->ReadIntRegister(4);
+                    lock = (Lock *)g_object_ids->SearchObject(lock_id);
+
+                    if (lock && lock->type == LOCK_TYPE) {
+                        lock->Release();
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_COND_CREATE: {
+                    DEBUG('e', (char *)"Condition : Create.\n");
+
+                    Condition *cond;
+                    int name_addr = g_machine->ReadIntRegister(4);
+
+                    int size = GetLengthParam(name_addr);
+
+                    char cond_name[size];
+
+                    GetStringParam(name_addr, cond_name, size);
+
+                    cond = new Condition(cond_name);
+                    g_object_ids->AddObject(cond);
                     break;
                 }
 
                 case SC_COND_DESTROY: {
+                    DEBUG('e', (char *)"Condition : Destroy.\n");
+
+                    Condition *cond;
+                    int cond_id = g_machine->ReadIntRegister(4);
+                    cond = (Condition *)g_object_ids->SearchObject(cond_id);
+                    if (cond && cond->type == CONDITION_TYPE) {
+                        delete cond;
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_COND_WAIT: {
+                    DEBUG('e', (char *)"Condition : Wait.\n");
+
+                    Condition *cond;
+                    int cond_id = g_machine->ReadIntRegister(4);
+                    cond = (Condition *)g_object_ids->SearchObject(cond_id);
+
+                    if (cond && cond->type == CONDITION_TYPE) {
+                        cond->Wait();
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_COND_SIGNAL: {
+                    DEBUG('e', (char *)"Condition : Signal.\n");
+
+                    Condition *cond;
+                    int cond_id = g_machine->ReadIntRegister(4);
+                    cond = (Condition *)g_object_ids->SearchObject(cond_id);
+
+                    if (cond && cond->type == CONDITION_TYPE) {
+                        cond->Signal();
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 
                 case SC_COND_BROADCAST: {
+                    DEBUG('e', (char *)"Condition : Broadcast.\n");
+
+                    Condition *cond;
+                    int cond_id = g_machine->ReadIntRegister(4);
+                    cond = (Condition *)g_object_ids->SearchObject(cond_id);
+
+                    if (cond && cond->type == CONDITION_TYPE) {
+                        cond->Broadcast();
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    } else {
+                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+
+                        g_machine->WriteIntRegister(2, 0);
+                    }
                     break;
                 }
 #endif
