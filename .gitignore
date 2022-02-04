@@ -12,3 +12,4 @@ test/sort
 SWAPDISK
 DISK
 .vscode/
+Makefile.config
