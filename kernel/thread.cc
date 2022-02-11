@@ -164,10 +164,29 @@ int Thread::Start(Process *owner,
 
 {
     ASSERT(process == NULL);
-
+#ifndef ETUDIANTS_TP
     printf("**** Warning: method Thread::Start is not implemented yet\n");
 
     exit(-1);
+#endif
+#ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+
+    this->process = owner;
+
+    int userSp = process->addrspace->StackAllocate();
+    int8_t *simulSp = AllocBoundedArray(SIMULATORSTACKSIZE);
+
+    this->InitSimulatorContext(simulSp, g_cfg->UserStackSize);
+    this->InitThreadContext(func, userSp, arg);
+
+    g_alive->Append(this);
+    g_scheduler->ReadyToRun(this);
+
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
+    return NO_ERROR;
+
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -419,12 +438,22 @@ Thread::Finish()
 
 {
     DEBUG('t', (char *)"Finishing thread \"%s\"\n", GetName());
-
+#ifndef ETUDIANTS_TP
     printf("**** Warning: method Thread::Finish is not fully implemented yet\n");
+    Sleep();
+#endif
+#ifdef ETUDIANTS_TP
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    ASSERT(g_thread_to_be_destroyed == NULL); // TODO fix
+
+    g_thread_to_be_destroyed = this;
 
     // Go to sleep
-
     Sleep();  // invokes SWITCH
+    g_alive->RemoveItem(this);
+    g_machine->interrupt->SetStatus(previousInterruptStatus);
+
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -585,10 +614,10 @@ Thread::SaveProcessorState()
     auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
-    for (int i = 0; i++; i < 32) {
+    for (int i = 0; i < 32; i++) {
         this->thread_context.float_registers[i] = g_machine->float_registers[i];
     }
-    for (int i = 0; i++; i < 40) {
+    for (int i = 0; i < 40; i++) {
         this->thread_context.int_registers[i] = g_machine->int_registers[i];
     }
     this->thread_context.cc = g_machine->cc;
@@ -621,10 +650,10 @@ Thread::RestoreProcessorState()
     auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
-    for (int i = 0; i++; i < 32) {
+    for (int i = 0; i < 32; i++) {
         g_machine->float_registers[i] = this->thread_context.float_registers[i];
     }
-    for (int i = 0; i++; i < 40) {
+    for (int i = 0; i < 40; i++) {
         g_machine->int_registers[i] = this->thread_context.int_registers[i];
     }
     g_machine->cc = this->thread_context.cc;

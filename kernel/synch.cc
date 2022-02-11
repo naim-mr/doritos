@@ -1,10 +1,10 @@
-/*! \file synch.cc 
+/*! \file synch.cc
 
-//  \brief Routines for synchronizing threads.  
+//  \brief Routines for synchronizing threads.
 
 //
 
-//      Three kinds of synchronization routines are defined here: 
+//      Three kinds of synchronization routines are defined here:
 
 //      semaphores, locks and condition variables.
 
@@ -142,15 +142,13 @@ Semaphore::P() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
-    if (this->value == 0) {
+    if (this->value <= 0) {
         queue->Append(g_current_thread);
         g_current_thread->Sleep();
-    } else {
-        this->value--;
     }
+    this->value--;
 
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
@@ -181,14 +179,14 @@ Semaphore::V() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     this->value++;
 
     Thread *toWake = (Thread *)(queue->Remove());
-
-    g_scheduler->ReadyToRun(toWake);
+    if (toWake != NULL) {
+        g_scheduler->ReadyToRun(toWake);
+    }
 
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
@@ -273,17 +271,15 @@ void Lock::Acquire() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     if (!this->free) {
         sleepqueue->Append(g_current_thread);
         g_current_thread->Sleep();
     } else {
-        this->free = false;
         this->owner = g_current_thread;
     }
-
+    this->free = false;
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
@@ -314,15 +310,15 @@ void Lock::Release() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     this->free = true;
     this->owner = NULL;
 
-    Thread *toWake = (Thread *)(*(int *)(sleepqueue->Remove()));
-
-    g_scheduler->ReadyToRun(toWake);
+    Thread *toWake = (Thread *)(sleepqueue->Remove());
+    if (toWake != NULL) {
+        g_scheduler->ReadyToRun(toWake);
+    }
 
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
@@ -406,8 +402,7 @@ void Condition::Wait() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     waitqueue->Append(g_current_thread);
     g_current_thread->Sleep();
@@ -420,7 +415,7 @@ void Condition::Wait() {
 
 // Condition::Signal
 
-/*! Wake up the first thread of the wait queue (if any). 
+/*! Wake up the first thread of the wait queue (if any).
 
 // This operation must be atomic, so we need to disable interrupts.
 
@@ -436,13 +431,13 @@ void Condition::Signal() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
-    Thread *toWake = (Thread *)(*(int *)(waitqueue->Remove()));
+    Thread *toWake = (Thread *)(waitqueue->Remove());
 
-    g_scheduler->ReadyToRun(toWake);
-
+    if (toWake != NULL) {
+        g_scheduler->ReadyToRun(toWake);
+    }
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }
@@ -466,11 +461,10 @@ void Condition::Broadcast() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->GetStatus();
-    g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
     while (!waitqueue->IsEmpty()) {
-        Thread *toWake = (Thread *)(*(int *)(waitqueue->Remove()));
+        Thread *toWake = (Thread *)(waitqueue->Remove());
 
         g_scheduler->ReadyToRun(toWake);
     }

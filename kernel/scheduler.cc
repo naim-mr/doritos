@@ -1,4 +1,4 @@
-/*! \file scheduler.cc 
+/*! \file scheduler.cc
 
 //  \brief Routines to choose the next thread to run, and to dispatch to that thread.
 
@@ -14,9 +14,9 @@
 
 // 	NOTE: We can't use Locks to provide mutual exclusion here, since
 
-// 	if we needed to wait for a lock, and the lock was busy, we would 
+// 	if we needed to wait for a lock, and the lock was busy, we would
 
-//	end up calling FindNextToRun(), and that would put us in an 
+//	end up calling FindNextToRun(), and that would put us in an
 
 //	infinite loop.
 
@@ -28,27 +28,20 @@
 
 // Copyright (c) 1992-1993 The Regents of the University of California.
 
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 
 // of liability and disclaimer of warranty provisions.
-
-
-
-
 
 #include "kernel/scheduler.h"
 
 #include "kernel/system.h"
-
 #include "kernel/thread.h"
-
-
 
 //----------------------------------------------------------------------
 
 //  Scheduler::Scheduler
 
-/*! 	Constructor. Initialize the list of ready but not 
+/*! 	Constructor. Initialize the list of ready but not
 
 //      running threads to empty.
 
@@ -58,13 +51,9 @@
 
 Scheduler::Scheduler()
 
-{ 
-
-    readyList = new Listint; 
-
-} 
-
-
+{
+    readyList = new Listint;
+}
 
 //----------------------------------------------------------------------
 
@@ -78,13 +67,9 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 
-{ 
-
-    delete readyList; 
-
-} 
-
-
+{
+    delete readyList;
+}
 
 //----------------------------------------------------------------------
 
@@ -104,17 +89,13 @@ Scheduler::~Scheduler()
 
 void
 
-Scheduler::ReadyToRun (Thread *thread)
+Scheduler::ReadyToRun(Thread *thread)
 
 {
-
     DEBUG('t', (char *)"Putting thread %s in ready list.\n", thread->GetName());
 
     readyList->Append((void *)thread);
-
 }
-
-
 
 //----------------------------------------------------------------------
 
@@ -136,17 +117,13 @@ Scheduler::ReadyToRun (Thread *thread)
 
 Thread *
 
-Scheduler::FindNextToRun ()
+Scheduler::FindNextToRun()
 
 {
+    Thread *thread = (Thread *)readyList->Remove();
 
-  Thread * thread=(Thread*)readyList->Remove();
-
-  return thread;
-
+    return thread;
 }
-
-
 
 //----------------------------------------------------------------------
 
@@ -176,31 +153,22 @@ Scheduler::FindNextToRun ()
 
 void
 
-Scheduler::SwitchTo (Thread *nextThread)
+Scheduler::SwitchTo(Thread *nextThread)
 
 {
+    Thread *oldThread = g_current_thread;
 
-Thread *oldThread = g_current_thread;
+    g_current_thread->CheckOverflow();  // check if the old thread
 
-
-
-    g_current_thread->CheckOverflow();	 // check if the old thread
-
-				 // had an undetected stack overflow
-
-
+    // had an undetected stack overflow
 
     DEBUG('t', (char *)"Switching from thread \"%s\" to thread \"%s\" time %llu\n",
 
-	  g_current_thread->GetName(), nextThread->GetName(),g_stats->getTotalTicks());
-
-    
+          g_current_thread->GetName(), nextThread->GetName(), g_stats->getTotalTicks());
 
     // Modify the current thread
 
     g_current_thread = nextThread;
-
-
 
     // Save the context of old thread
 
@@ -208,29 +176,21 @@ Thread *oldThread = g_current_thread;
 
     oldThread->SaveSimulatorState();
 
-
-
     // Do the context switch if the two threads are different
 
-    if (oldThread!=g_current_thread) {
+    if (oldThread != g_current_thread) {
+        // Restore the state of the operating system from its
 
-    	// Restore the state of the operating system from its
+        // kernelContext structure such that it goes on executing when
 
-    	// kernelContext structure such that it goes on executing when
+        // it was last interrupted
 
-    	// it was last interrupted
+        nextThread->RestoreProcessorState();
 
-    	nextThread->RestoreProcessorState();
-
-	nextThread->RestoreSimulatorState();
-
+        nextThread->RestoreSimulatorState();
     }
 
-
-
-    DEBUG('t', (char *)"Now in thread \"%s\" time %llu\n", g_current_thread->GetName(),g_stats->getTotalTicks());
-
-
+    DEBUG('t', (char *)"Now in thread \"%s\" time %llu\n", g_current_thread->GetName(), g_stats->getTotalTicks());
 
     // If the old thread gave up the processor because it was finishing,
 
@@ -239,14 +199,17 @@ Thread *oldThread = g_current_thread;
     // before now (for example, in Thread::Finish()), because up to this
 
     // point, we were still running on the old thread's stack!
+#ifndef ETUDIANTS_TP
+    printf("**** Warning: thread actual deletion not implemented yet\n");
+#endif
+#ifdef ETUDIANTS_TP
+    // if (g_thread_to_be_destroyed != NULL) {
+    //     delete g_thread_to_be_destroyed;
+    // }
+    //printf("**** Warning: thread actual deletion not implemented yet\n");
 
-  printf("**** Warning: thread actual deletion not implemented yet\n");
-
-
-
+#endif
 }
-
-
 
 //----------------------------------------------------------------------
 
@@ -265,12 +228,9 @@ void
 Scheduler::Print()
 
 {
-
     printf("Ready list contents: [");
 
-    readyList->Mapcar((VoidFunctionPtr) ThreadPrint);
+    readyList->Mapcar((VoidFunctionPtr)ThreadPrint);
 
     printf("]\n");
-
 }
-
