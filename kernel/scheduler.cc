@@ -203,10 +203,10 @@ Scheduler::SwitchTo(Thread *nextThread)
     printf("**** Warning: thread actual deletion not implemented yet\n");
 #endif
 #ifdef ETUDIANTS_TP
-    // if (g_thread_to_be_destroyed != NULL) {
-    //     delete g_thread_to_be_destroyed;
-    // }
-    //printf("**** Warning: thread actual deletion not implemented yet\n");
+
+    if (g_thread_to_be_destroyed != NULL) {
+        delete g_thread_to_be_destroyed;
+    }
 
 #endif
 }

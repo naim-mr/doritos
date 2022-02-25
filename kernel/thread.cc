@@ -449,8 +449,9 @@ Thread::Finish()
     g_thread_to_be_destroyed = this;
 
     // Go to sleep
-    Sleep();  // invokes SWITCH
+    
     g_alive->RemoveItem(this);
+    Sleep();  // invokes SWITCH
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 
 #endif
