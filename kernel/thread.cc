@@ -444,7 +444,6 @@ Thread::Finish()
 #endif
 #ifdef ETUDIANTS_TP
     auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-    ASSERT(g_thread_to_be_destroyed == NULL); // TODO fix
 
     g_thread_to_be_destroyed = this;
 
