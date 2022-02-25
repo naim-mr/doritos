@@ -206,6 +206,7 @@ Scheduler::SwitchTo(Thread *nextThread)
 
     if (g_thread_to_be_destroyed != NULL) {
         delete g_thread_to_be_destroyed;
+        g_thread_to_be_destroyed = NULL;
     }
 
 #endif
