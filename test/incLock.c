@@ -22,15 +22,15 @@
 #include "userlib/syscall.h"
 
 int v;
-SemId sem;
+LockId sem;
 
 void job(){
-    P(sem);
+    LockAcquire(sem);
     int i = 0;
     for(i;i<2000000;i++){
         v++;
     }
-    V(sem);
+    LockRelease(sem);
 }
 
 
@@ -41,7 +41,7 @@ main()
 {
   v = 0;
   n_printf("** ** ** Bonjour le monde ** ** **\n");
-  sem = SemCreate("semInc",1);
+  sem = LockCreate("lockInc");
   int argumentprout = 3;
   ThreadId t1 = threadCreate("prout",job);
   ThreadId t2 = threadCreate("proutito",job);
@@ -49,7 +49,7 @@ main()
   n_printf("1: %d\n",v);
   Join(t2);
   n_printf("2: %d\n",v);
-  SemDestroy(sem);
+  LockDestroy(sem);
   n_printf("3: %d\n",v);
 
 
