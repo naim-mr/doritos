@@ -27,7 +27,7 @@ SemId sem_mem;
 SemId sem_chan;
 
 int current;
-int client(){
+void client(){
     P(sem_chan);
     current++;
     
@@ -36,15 +36,14 @@ int client(){
 }
 
 
-int server(){
-    P(sem_chan);
+void server(){
     P(sem_mem);
     
      n_printf("current: %d\n",current);
     
 
     V(sem_mem);
-    V(sem_chan);
+    
 }
 
 int
@@ -52,16 +51,16 @@ int
 main()
 
 {
-
+  current=0;
   sem_mem= SemCreate("memory",0);
   sem_chan= SemCreate("channel",1);
   ThreadId client1= threadCreate("client1",client);
   ThreadId client2=  threadCreate("client2",client);
   ThreadId server=  threadCreate("server",client);
-  
+   
+  Join(server);
   Join(client1);
   Join(client2);
-  Join(server);
 
   SemDestroy(sem_mem);
   SemDestroy(sem_chan);
