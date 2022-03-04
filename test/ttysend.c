@@ -1,4 +1,4 @@
-/* sort.c 
+/* sort.c
 
  *    Test program to sort a large number of integers.
 
@@ -16,54 +16,45 @@
 
 //  Copyright (c) 1999-2000 INSA de Rennes.
 
-//  All rights reserved.  
+//  All rights reserved.
 
-//  See copyright_insa.h for copyright notice and limitation 
+//  See copyright_insa.h for copyright notice and limitation
 
 //  of liability and disclaimer of warranty provisions.
 
 */
 
-
-
 // Nachos system calls
 
-#include "userlib/syscall.h"
 #include "userlib/libnachos.h"
-
-
+#include "userlib/syscall.h"
 
 // Table to be sorted
 
 #define NUM 30
 
-
-void jobSend(){
-    char phil[9]="philemon";
-    n_printf("sending %s ...\n",phil);
-    while(1) TtySend(phil);
+void jobSend() {
+    char phil[9] = "philemon";
+    n_printf("sending %s ...\n", phil);
+    TtySend(phil);
 }
 
-
-void jobReceive(){
+void jobReceive() {
     char houdail[9];
-    
-    while(houdail[0]="\0") TtyReceive(houdail,9);
-    n_printf("receive %s OMG\n",houdail);
+
+    TtyReceive(houdail, 9);
+    n_printf("receive %s OMG\n", houdail);
 }
 int
 
 main()
 
 {
-    
-    ThreadId receive = threadCreate("receive",jobReceive);
-    ThreadId send = threadCreate("send",jobSend);
+    ThreadId send = threadCreate("send", jobSend);
+
+    ThreadId receive = threadCreate("receive", jobReceive);
     Join(send);
-    
+    Join(receive);
 
     return 0;
-
 }
-
-

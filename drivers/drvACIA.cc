@@ -73,10 +73,10 @@ DriverACIA::DriverACIA()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    this->send_sema = new Semaphore("sem_send_busywaiting",1);
-    this->receive_sema = new Semaphore("sem_receive_busywaiting",0);
-    this->ind_rec=0;
-    this->ind_send=0;
+    this->send_sema = new Semaphore("sem_send", 1);
+    this->receive_sema = new Semaphore("sem_receive", 1);
+    this->ind_rec = 0;
+    this->ind_send = 0;
 #endif
 }
 
@@ -104,14 +104,20 @@ int DriverACIA::TtySend(char* buff)
     if (g_machine->acia->GetWorkingMode() == BUSY_WAITING) {
         this->send_sema->P();
         int i = 0;
-        while (buff[i] != '\0' && i < BUFFER_SIZE) {
-            send_buffer[this->ind_send] = buff[i];
-            this->ind_send++;
+        // while (buff[i] != '\0' && i < BUFFER_SIZE) {
+        //     send_buffer[this->ind_send] = buff[i];
+        //     this->ind_send++;
+        //     i++;
+        // }
+        // this->ind_send=0;
+        while (i < BUFFER_SIZE && buff[i] != '\0') {
+            while (g_machine->acia->GetInputStateReg() != EMPTY) {
+            }
+            g_machine->acia->PutChar(buff[i]);
             i++;
         }
-        this->ind_send=0;
         this->send_sema->V();
-        
+
         return i;
     } else {
         printf("**** Warning: method TtySend of the ACIA driver for interruptions not implemented yet\n");
@@ -147,12 +153,12 @@ int DriverACIA::TtyReceive(char* buff, int lg)
     if (g_machine->acia->GetWorkingMode() == BUSY_WAITING) {
         this->receive_sema->P();
         int i = 0;
-        while (buff[i] != '\0' && i<BUFFER_SIZE && i < lg) {
-            receive_buffer[ind_rec] = buff[i];
-            this->ind_rec++;
+        while (buff[i] != '\0' && i < BUFFER_SIZE && i < lg) {
+            while (g_machine->acia->GetInputStateReg() != FULL) {
+            }
+            buff[i] = g_machine->acia->GetChar();
             i++;
         }
-        this->ind_rec=0;
         this->receive_sema->V();
         return i;
     } else {
@@ -186,7 +192,6 @@ void DriverACIA::InterruptSend()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    
 
 #endif
 }
