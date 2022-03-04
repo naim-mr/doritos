@@ -73,15 +73,10 @@ DriverACIA::DriverACIA()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    if(g_machine->acia->GetWorkingMode()== BUSY_WAITING){
-       this->send_sema = new Semaphore("sem_send_busywaiting",1);
-       this->receive_sema = new Semaphore("sem_receive_busywaiting",0);
-       this->ind_rec=0;
-       this->ind_send=0;
-
-    }
-        
-
+    this->send_sema = new Semaphore("sem_send_busywaiting",1);
+    this->receive_sema = new Semaphore("sem_receive_busywaiting",0);
+    this->ind_rec=0;
+    this->ind_send=0;
 #endif
 }
 
@@ -191,6 +186,7 @@ void DriverACIA::InterruptSend()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    
 
 #endif
 }

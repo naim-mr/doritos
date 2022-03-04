@@ -12,7 +12,7 @@
 
 
 
-PROGRAMS = halt hello shell matmult sort inc incLock client
+PROGRAMS = halt hello shell matmult sort inc incLock client ttysend
 
 
 
