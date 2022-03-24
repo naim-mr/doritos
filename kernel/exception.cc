@@ -480,9 +480,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_SEMAPHORE_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2,  INVALID_SEMAPHORE_ID);
                     }
                     break;
                 }
@@ -500,9 +500,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_SEMAPHORE_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_SEMAPHORE_ID);
                     }
                     break;
                 }
@@ -521,7 +521,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     GetStringParam(name_addr, sem_name, size);
 
                     sem = new Semaphore(sem_name, value);
-                    g_object_ids->AddObject(sem);
+                    int sem_id=g_object_ids->AddObject(sem);
+                    g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                    g_machine->WriteIntRegister(2,sem_id);
                     break;
                 }
 
@@ -538,9 +540,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"",  INVALID_SEMAPHORE_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2,  INVALID_SEMAPHORE_ID);
                     }
                     break;
                 }
@@ -558,7 +560,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     GetStringParam(name_addr, lock_name, size);
 
                     lock = new Lock(lock_name);
-                    g_object_ids->AddObject(lock);
+                    int l_id=g_object_ids->AddObject(lock);
+                    g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                    g_machine->WriteIntRegister(2,l_id);
                     break;
                 }
 
@@ -574,9 +578,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"",  INVALID_LOCK_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2,  INVALID_LOCK_ID);
                     }
                     break;
                 }
@@ -594,9 +598,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_LOCK_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_LOCK_ID);
                     }
                     break;
                 }
@@ -614,9 +618,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_LOCK_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_LOCK_ID);
                     }
                     break;
                 }
@@ -650,9 +654,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_CONDITION_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_CONDITION_ID);
                     }
                     break;
                 }
@@ -670,9 +674,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_CONDITION_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_CONDITION_ID);
                     }
                     break;
                 }
@@ -690,9 +694,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_CONDITION_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_CONDITION_ID);
                     }
                     break;
                 }
@@ -710,9 +714,9 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         g_machine->WriteIntRegister(2, 0);
                     } else {
-                        g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                        g_syscall_error->SetMsg((char *)"", INVALID_CONDITION_ID);
 
-                        g_machine->WriteIntRegister(2, 0);
+                        g_machine->WriteIntRegister(2, INVALID_CONDITION_ID);
                     }
                     break;
                 }
@@ -863,7 +867,7 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                             g_syscall_error->SetMsg((char *)"", NO_ERROR);
 
-                        }
+                        } 
 
                         else
 

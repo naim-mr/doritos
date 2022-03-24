@@ -142,13 +142,14 @@ Semaphore::P() {
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-
-    if (this->value <= 0) {
+    auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF); 
+    //printf("P %s : %d\n",this->name,this->value);
+    this->value--;
+    if (this->value < 0) {
         queue->Append(g_current_thread);
         g_current_thread->Sleep();
     }
-    this->value--;
+    
 
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
@@ -180,7 +181,7 @@ Semaphore::V() {
 #endif
 #ifdef ETUDIANTS_TP
     auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-
+   // printf("V : %d\n",this->value);
     this->value++;
 
     Thread *toWake = (Thread *)(queue->Remove());
@@ -276,9 +277,9 @@ void Lock::Acquire() {
     if (!this->free) {
         sleepqueue->Append(g_current_thread);
         g_current_thread->Sleep();
-    } else {
-        this->owner = g_current_thread;
-    }
+    } 
+    this->owner = g_current_thread;
+    
     this->free = false;
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
@@ -311,7 +312,7 @@ void Lock::Release() {
 #endif
 #ifdef ETUDIANTS_TP
     auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-
+   
     this->free = true;
     this->owner = NULL;
 
