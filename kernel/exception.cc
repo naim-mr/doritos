@@ -636,9 +636,13 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     char cond_name[size];
 
                     GetStringParam(name_addr, cond_name, size);
-
+                    
+                    
+                    
                     cond = new Condition(cond_name);
-                    g_object_ids->AddObject(cond);
+                    int c_id= g_object_ids->AddObject(cond);
+                    g_syscall_error->SetMsg((char *)"", NO_ERROR);
+                    g_machine->WriteIntRegister(2,c_id);
                     break;
                 }
 
