@@ -276,10 +276,11 @@ void Lock::Acquire() {
     if (!this->free) {
         sleepqueue->Append(g_current_thread);
         g_current_thread->Sleep();
-    } else {
-        this->owner = g_current_thread;
     }
+
+    this->owner = g_current_thread;
     this->free = false;
+    
     g_machine->interrupt->SetStatus(previousInterruptStatus);
 #endif
 }

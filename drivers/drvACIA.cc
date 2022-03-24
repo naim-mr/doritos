@@ -73,10 +73,15 @@ DriverACIA::DriverACIA()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    this->send_sema = new Semaphore("sem_send", 1);
-    this->receive_sema = new Semaphore("sem_receive", 1);
-    this->ind_rec = 0;
-    this->ind_send = 0;
+    if (g_cfg->ACIA == BUSY_WAITING) {
+        this->send_sema = new Semaphore("sem_send", 1);
+        this->receive_sema = new Semaphore("sem_receive", 1);
+        g_machine->acia->SetWorkingMode(BUSY_WAITING);
+    } else if (g_cfg->ACIA == ACIA_INTERRUPT) {
+        this->ind_rec = 0;
+        this->ind_send = 0; // TODO
+    }
+
 #endif
 }
 
@@ -104,18 +109,19 @@ int DriverACIA::TtySend(char* buff)
     if (g_machine->acia->GetWorkingMode() == BUSY_WAITING) {
         this->send_sema->P();
         int i = 0;
-        // while (buff[i] != '\0' && i < BUFFER_SIZE) {
-        //     send_buffer[this->ind_send] = buff[i];
-        //     this->ind_send++;
-        //     i++;
-        // }
-        // this->ind_send=0;
         while (i < BUFFER_SIZE && buff[i] != '\0') {
-            while (g_machine->acia->GetInputStateReg() != EMPTY) {
+            while (g_machine->acia->GetOutputStateReg() != EMPTY) {
+            }
+            g_machine->acia->PutChar(buff[i]);
+            i++;
+        }  // one more loop to send \0
+        if (i < BUFFER_SIZE) {
+            while (g_machine->acia->GetOutputStateReg() != EMPTY) {
             }
             g_machine->acia->PutChar(buff[i]);
             i++;
         }
+
         this->send_sema->V();
 
         return i;
@@ -152,13 +158,14 @@ int DriverACIA::TtyReceive(char* buff, int lg)
 #ifdef ETUDIANTS_TP
     if (g_machine->acia->GetWorkingMode() == BUSY_WAITING) {
         this->receive_sema->P();
-        int i = 0;
-        while (buff[i] != '\0' && i < BUFFER_SIZE && i < lg) {
+        int i = -1;
+        do {
+            i++;
             while (g_machine->acia->GetInputStateReg() != FULL) {
             }
             buff[i] = g_machine->acia->GetChar();
-            i++;
-        }
+
+        } while (buff[i] != '\0' && i < BUFFER_SIZE - 1 && i < lg - 1);
         this->receive_sema->V();
         return i;
     } else {
@@ -192,7 +199,9 @@ void DriverACIA::InterruptSend()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    printf("**** Warning: send interrupt handler not implemented yet\n");
 
+    exit(-1);
 #endif
 }
 
@@ -223,6 +232,8 @@ void DriverACIA::InterruptReceive()
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
+    printf("**** Warning: receive interrupt handler not implemented yet\n");
 
+    exit(-1);
 #endif
 }

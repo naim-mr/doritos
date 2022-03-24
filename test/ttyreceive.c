@@ -37,7 +37,12 @@
 
 #define NUM 30
 
+void jobReceive() {
+    char houdail[9];
 
+    TtyReceive(houdail, 9);
+    n_printf("Received string %s\n", houdail);
+}
 
 
 int
@@ -47,7 +52,7 @@ main()
 {
 
     
-    
+    jobReceive();
 
     return 0;
 

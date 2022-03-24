@@ -34,7 +34,7 @@
 #define NUM 30
 
 void jobSend() {
-    char phil[9] = "philemon";
+    char phil[9] = "philemon\0";
     n_printf("sending %s ...\n", phil);
     TtySend(phil);
 }
@@ -50,11 +50,7 @@ int
 main()
 
 {
-    ThreadId send = threadCreate("send", jobSend);
-
-    ThreadId receive = threadCreate("receive", jobReceive);
-    Join(send);
-    Join(receive);
-
+    jobSend();
+    // jobReceive();
     return 0;
 }
