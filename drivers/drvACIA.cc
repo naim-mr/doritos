@@ -67,22 +67,30 @@
 DriverACIA::DriverACIA()
 
 {
+    
+    
 #ifndef ETUDIANTS_TP
     printf("**** Warning: contructor of the ACIA driver not implemented yet\n");
 
     exit(-1);
 #endif
 #ifdef ETUDIANTS_TP
-    if (g_cfg->ACIA == BUSY_WAITING) {
+    
+    
+    if (g_machine->acia->GetWorkingMode() == BUSY_WAITING) { 
+        
         this->send_sema = new Semaphore("sem_send", 1);
         this->receive_sema = new Semaphore("sem_receive", 1);
         g_machine->acia->SetWorkingMode(BUSY_WAITING);
-    } else if (g_cfg->ACIA == ACIA_INTERRUPT) {
+    } else if (g_machine->acia->GetWorkingMode() == ACIA_INTERRUPT) {
+        
         this->ind_rec = 0;
         this->ind_send = 0; // TODO
     }
+    printf("ici\n");
 
 #endif
+
 }
 
 //-------------------------------------------------------------------------
@@ -107,7 +115,10 @@ int DriverACIA::TtySend(char* buff)
 #endif
 #ifdef ETUDIANTS_TP
     if (g_machine->acia->GetWorkingMode() == BUSY_WAITING) {
+        
+        ASSERT(this->send_sema != nullptr);
         this->send_sema->P();
+        
         int i = 0;
         while (i < BUFFER_SIZE && buff[i] != '\0') {
             while (g_machine->acia->GetOutputStateReg() != EMPTY) {

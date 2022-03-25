@@ -39,23 +39,14 @@ void job(){
         CondSignal(cond);
         CondWait(cond);
     }
-    
-    
-    
 }
-int
 
-main()
-
-{
+int main()  {
   cur=-1;
   cond= CondCreate("condition test");
   ThreadId client1= threadCreate("client1",job);
   ThreadId client2=  threadCreate("client2",job);  
-  
-
   return 0;
-
 }
 
 

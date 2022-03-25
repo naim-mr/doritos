@@ -18,7 +18,7 @@
 
 // turning off interrupts. While interrupts are disabled, no
 
-// context switch can occur, and thus the current thread is guaranteed
+// context   can occur, and thus the current thread is guaranteed
 
 // to hold the CPU throughout, until interrupts are reenabled.
 
@@ -65,7 +65,8 @@
 
 Semaphore::Semaphore(char *debugName, int initialValue)
 
-{
+{   
+    
     name = new char[strlen(debugName) + 1];
 
     strcpy(name, debugName);
@@ -93,7 +94,7 @@ Semaphore::~Semaphore()
 
 {
     type = INVALID_TYPE;
-
+    printf("destroyyy\n");
     if (!queue->IsEmpty()) {
         DEBUG('s', (char *)"Destructor of semaphore \"%s\", queue is not empty!!\n", name);
 
@@ -143,7 +144,6 @@ Semaphore::P() {
 #endif
 #ifdef ETUDIANTS_TP
     auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF); 
-    //printf("P %s : %d\n",this->name,this->value);
     this->value--;
     if (this->value < 0) {
         queue->Append(g_current_thread);
