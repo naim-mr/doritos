@@ -28,7 +28,7 @@
 void jobReceive() {
     char houdail[9];
 
-    TtyReceive(houdail, 9);
+    TtyReceive(houdail, 8);
     n_printf("Received string %s\n", houdail);
 }
 

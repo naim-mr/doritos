@@ -13,3 +13,5 @@ SWAPDISK
 DISK
 .vscode/
 Makefile.config
+test/client
+test/ttyreceive
