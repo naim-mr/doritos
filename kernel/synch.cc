@@ -94,7 +94,6 @@ Semaphore::~Semaphore()
 
 {
     type = INVALID_TYPE;
-    printf("destroyyy\n");
     if (!queue->IsEmpty()) {
         DEBUG('s', (char *)"Destructor of semaphore \"%s\", queue is not empty!!\n", name);
 
