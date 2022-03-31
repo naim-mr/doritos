@@ -111,7 +111,7 @@ int DriverACIA::TtySend(char* buff)
 #endif
 #ifdef ETUDIANTS_TP
     ASSERT(this->send_sema != nullptr);
-
+    
     if (g_cfg->ACIA == ACIA_BUSY_WAITING) {
         this->send_sema->P();
         int i = 0;
@@ -120,14 +120,17 @@ int DriverACIA::TtySend(char* buff)
             while (g_machine->acia->GetOutputStateReg() != EMPTY) {
             }
             g_machine->acia->PutChar(buff[i]);
+            printf("send char: %c\n",buff[i]);
+            
             i++;
         }  // one more loop to send \0
         if (i < BUFFER_SIZE) {
             while (g_machine->acia->GetOutputStateReg() != EMPTY) {
             }
             g_machine->acia->PutChar(buff[i]);
+            printf("send char: bss %c\n",buff[i]);
         }
-
+        
         this->send_sema->V();
 
         return i;
@@ -181,9 +184,11 @@ int DriverACIA::TtyReceive(char* buff, int lg)
             i++;
             while (g_machine->acia->GetInputStateReg() != FULL) {
             }
+            
             buff[i] = g_machine->acia->GetChar();
-
-        } while (buff[i] != '\0' && i < BUFFER_SIZE - 1 && i < lg - 1);
+            printf("receive char: %c\n",buff[i]);
+        } while (buff[i] != '\0' && i < BUFFER_SIZE - 1 && i < lg );
+        
         this->receive_sema->V();
         return i;
     } else if (g_cfg->ACIA == ACIA_INTERRUPT) {
