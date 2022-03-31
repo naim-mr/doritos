@@ -257,7 +257,7 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     int error = NO_ERROR;
 
                     // Get the process name
-
+                    
                     addr = g_machine->ReadIntRegister(4);
 
                     size = GetLengthParam(addr);
@@ -265,11 +265,11 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
                     char ch[size];
 
                     GetStringParam(addr, ch, size);
-
+                    
                     sprintf(name, "master thread of process %s", ch);
-
+                
                     Process *p = new Process(ch, &error);
-
+                    
                     if (error != NO_ERROR) {
                         g_machine->WriteIntRegister(2, ERROR);
 
@@ -283,7 +283,7 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         break;
                     }
-
+                    
                     Thread *ptThread = new Thread(name);
 
                     int32_t tid = g_object_ids->AddObject(ptThread);
@@ -307,11 +307,11 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 
                         break;
                     }
-
+                    
                     g_syscall_error->SetMsg((char *)"", NO_ERROR);
 
                     g_machine->WriteIntRegister(2, tid);
-
+                    
                     break;
                 }
 

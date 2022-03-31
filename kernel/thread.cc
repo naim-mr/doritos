@@ -171,19 +171,21 @@ int Thread::Start(Process *owner,
 #endif
 #ifdef ETUDIANTS_TP
     auto previousInterruptStatus = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-
+    printf("Starting Thread \n");
+    owner->numThreads++;
     this->process = owner;
-
+    
     int userSp = process->addrspace->StackAllocate();
     int8_t *simulSp = AllocBoundedArray(SIMULATORSTACKSIZE);
 
-    this->InitSimulatorContext(simulSp, g_cfg->UserStackSize);
+    this->InitSimulatorContext(simulSp, SIMULATORSTACKSIZE);
     this->InitThreadContext(func, userSp, arg);
 
     g_alive->Append(this);
     g_scheduler->ReadyToRun(this);
 
     g_machine->interrupt->SetStatus(previousInterruptStatus);
+    printf("Starting Thread end \n");
     return NO_ERROR;
 
 #endif
@@ -623,6 +625,7 @@ Thread::SaveProcessorState()
     this->thread_context.cc = g_machine->cc;
 
     g_machine->interrupt->SetStatus(previousInterruptStatus);
+    
 #endif
 }
 
@@ -649,7 +652,8 @@ Thread::RestoreProcessorState()
 #ifdef ETUDIANTS_TP
     auto previousInterruptStatus = g_machine->interrupt->GetStatus();
     g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-
+    g_machine->mmu->translationTable = this->GetProcessOwner()->addrspace->translationTable;
+    
     for (int i = 0; i < 32; i++) {
         g_machine->float_registers[i] = this->thread_context.float_registers[i];
     }
