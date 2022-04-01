@@ -128,7 +128,7 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
 
 {
 
-  Elf32_Ehdr elfHdr;      // Header du fichier exécutable
+  Elf32_Ehdr elfHdr;      // Header du fichier exï¿½cutable
 
 
 
@@ -330,7 +330,7 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
 
 	{
 
-
+    #ifndef ETUDIANTS_TP
 
 	  /* Without demand paging */
 
@@ -427,6 +427,26 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
 	  
 
 	  /* End of code without demand paging */
+    #endif
+    #ifdef ETUDIANTS_TP
+     // Set up default values for the page table entry
+
+	  translationTable->clearBitSwap(virt_page);
+
+	  translationTable->setBitReadAllowed(virt_page);
+
+	  if (section_table[i].sh_flags & SHF_WRITE) {
+	    translationTable->setBitWriteAllowed(virt_page);
+    } else {
+      translationTable->clearBitWriteAllowed(virt_page);
+    } 
+
+	  translationTable->clearBitIo(virt_page);
+
+    translationTable->setAddrDisk(virt_page,-1);
+
+    translationTable->clearBitValid(virt_page);
+    #endif
 
 	}
 
@@ -581,7 +601,7 @@ int AddrSpace::StackAllocate(void)
 
 
   for (int i = stackBasePage ; i < (stackBasePage + numPages) ; i++) {
-
+    #ifndef ETUDIANTS_TP
     /* Without demand paging */
 
 
@@ -604,7 +624,7 @@ int AddrSpace::StackAllocate(void)
 
     g_physical_mem_manager->tpr[pp].locked=true;
 
-    translationTable->setPhysicalPage(i,pp);
+    translationTable->setPhysicsetPhysicalPagealPage(i,pp);
 
 
 
@@ -627,6 +647,20 @@ int AddrSpace::StackAllocate(void)
     translationTable->clearBitIo(i);
 
     /* End of code without demand paging */
+    #endif
+    #ifdef ETUDIANTS_TP
+    translationTable->clearBitValid(i);
+
+    translationTable->setAddrDisk(i,-1);
+
+    translationTable->clearBitSwap(i);
+
+    translationTable->setBitReadAllowed(i);
+
+    translationTable->setBitWriteAllowed(i);
+
+    translationTable->clearBitIo(i);
+    #endif
 
     }
 
