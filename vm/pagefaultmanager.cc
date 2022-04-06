@@ -82,13 +82,47 @@ PageFaultManager::~PageFaultManager() {
 
 ExceptionType PageFaultManager::PageFault(uint32_t virtualPage) 
 
-{
+{   
+    auto translationTable =  g_machine->mmu->translationTable;
+    auto inSwap = translationTable->getBitSwap(virtualPage);
+    int diskAddr= translationTable->getAddrDisk(virtualPage);
+    int np = g_physical_mem_manager->AddPhysicalToVirtualMapping(g_current_thread->GetProcessOwner()->addrspace,virtualPage);
+    g_machine->mmu->translationTable->setPhysicalPage(virtualPage,np);
+    g_machine->mmu->translationTable->setBitValid(virtualPage);
+    
+    printf("virtual page : %d\n",virtualPage);
+    
+    if(inSwap){
+        //Page load from the swap
+        while(diskAddr==-1) {
+          g_current_thread->Yield();
+          diskAddr= translationTable->getAddrDisk(virtualPage);
+        }
+        char buff[g_cfg->PageSize];
+        g_swap_manager->GetPageSwap(diskAddr,buff);        
+        memcpy(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),  buff, g_cfg->PageSize);
+        printf("ok ? 11\n");
+        
+        
 
-  printf("**** Warning: page fault manager is not implemented yet\n");
-
-    exit(-1);
-
-    return ((ExceptionType)0);
+    }
+    else if ( (!inSwap) && (diskAddr == -1) ) {
+      
+        //anonymous page
+        printf("ici anonymus\n");
+        bzero(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),g_cfg->PageSize);
+        
+          
+    }else {
+        // load from the exec file 
+        printf("ici exec\n");
+        auto exec_file = g_current_thread->GetProcessOwner()->exec_file;
+       exec_file->ReadAt((char *)&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),g_cfg->PageSize, np*g_cfg->PageSize );
+    }
+    printf("ici fin\n");
+    translationTable->setBitIo(virtualPage);
+    
+    return NO_EXCEPTION;
 
 }
 

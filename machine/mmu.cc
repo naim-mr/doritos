@@ -443,7 +443,7 @@ MMU::Translate(uint32_t virtAddr, uint32_t *physAddr, int size, bool writing)
   if (!translationTable->getBitReadAllowed(vpn) && !translationTable->getBitWriteAllowed(vpn)) {
 
     DEBUG('h', (char *)"virtual page # %d not mapped !\n", vpn);
-
+    
     return ADDRESSERROR_EXCEPTION;
 
   }
@@ -485,8 +485,9 @@ MMU::Translate(uint32_t virtAddr, uint32_t *physAddr, int size, bool writing)
 
 
     if (!translationTable->getBitValid(vpn)) {
+      
 
-      printf("Error: page fault failed (bit valid should be set to 1)\n");
+      printf(" %d Error: page fault failed (bit valid should be set to 1)\n",vpn);
 
       exit(-1);
 

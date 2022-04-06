@@ -241,12 +241,22 @@ void PhysicalMemManager::ChangeOwner(long numPage, Thread* owner) {
 int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtualPage) 
 
 {
-
+#ifndef ETUDIANTS_TP
   printf("**** Warning: function AddPhysicalToVirtualMapping is not implemented\n");
-
+  
   exit(-1);
-
   return (0);
+#endif
+#ifdef ETUDIANTS_TP
+  int np = FindFreePage();
+  tpr[np].locked = true;
+  tpr[np].owner = owner;
+  tpr[np].virtualPage = virtualPage;
+  tpr[np].free = false;
+  //tpr[np].locked = false;
+  return np;
+#endif
+  
 
 }
 
