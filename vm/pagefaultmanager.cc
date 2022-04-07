@@ -76,7 +76,11 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
     int diskAddr = translationTable->getAddrDisk(virtualPage);
     int np = g_physical_mem_manager->AddPhysicalToVirtualMapping(g_current_thread->GetProcessOwner()->addrspace, virtualPage);
     g_machine->mmu->translationTable->setPhysicalPage(virtualPage, np);
-
+    while (translationTable->getBitIo(virtualPage))
+    {
+      g_current_thread->Yield();
+    }
+    translationTable->setBitIo(virtualPage);
 
     if (inSwap) {
         // Page load from the swap
@@ -97,7 +101,7 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
         auto exec_file = g_current_thread->GetProcessOwner()->exec_file;
         exec_file->ReadAt((char *)&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage) * g_cfg->PageSize]), g_cfg->PageSize, diskAddr);
     }
-    //translationTable->setBitIo(virtualPage);
+    translationTable->clearBitIo(virtualPage);
 
     g_machine->mmu->translationTable->setBitValid(virtualPage);
 
