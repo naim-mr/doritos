@@ -297,26 +297,37 @@ int PhysicalMemManager::EvictPage() {
 #endif
 #ifdef ETUDIANTS_TP
     int res = -1;
-    for (int i = 0; i < g_cfg->NumPhysPages; i++) {
-        auto U = g_machine->mmu->translationTable->getBitU(tpr[i].virtualPage);
+    auto fullLocked = true;
+    int local_iclock=(i_clock+1)%g_cfg->NumPhysPages;
+    while(local_iclock != i_clock) {
+
+        auto U = g_machine->mmu->translationTable->getBitU(tpr[local_iclock].virtualPage);
         if (U == false) {
-            if (tpr[i].locked == false) {
-                tpr[i].locked = true;
+            if (tpr[local_iclock].locked == false) {
+                tpr[local_iclock].locked = true;
+                i_clock= local_iclock;
                 res = g_swap_manager->PutPageSwap(
-                    g_machine->mmu->translationTable->getAddrDisk(tpr[i].virtualPage),
-                    (char*)&(g_machine->mainMemory[g_machine->mmu->translationTable->getPhysicalPage(tpr[i].virtualPage) * g_cfg->PageSize]));
+                    g_machine->mmu->translationTable->getAddrDisk(tpr[local_iclock].virtualPage),
+                    (char*)&(g_machine->mainMemory[g_machine->mmu->translationTable->getPhysicalPage(tpr[local_iclock].virtualPage) * g_cfg->PageSize]));
+                fullLocked = false;
+                g_machine->mmu->translationTable->setAddrDisk(tpr[local_iclock].virtualPage,res);
+                g_machine->mmu->translationTable->setBitSwap(tpr[local_iclock].virtualPage);
+                g_machine->mmu->translationTable->clearBitValid(tpr[local_iclock].virtualPage);
+              
                 break;
             }
         }
-      g_machine->mmu->translationTable->clearBitU(tpr[i].virtualPage);
-
+      g_machine->mmu->translationTable->clearBitU(tpr[local_iclock].virtualPage);
+      
+      
+      local_iclock= (local_iclock +1)%g_cfg->NumPhysPages;
     }
-
-    if (res == -1) {
+    
+    if (fullLocked) {
       g_current_thread->Yield();
-      res = this->EvictPage();
+      local_iclock = this->EvictPage();
     }
-    return res;
+    return local_iclock;
 
 #endif
 }
