@@ -343,13 +343,17 @@ int PhysicalMemManager::FindFreePage() {
 //-----------------------------------------------------------------
 
 int PhysicalMemManager::EvictPage() {
-
+#ifndef ETUDIANTS_TP
   printf("**** Warning: page replacement algorithm is not implemented yet\n");
 
     exit(-1);
 
     return (0);
+#endif
+#ifdef ETUDIANTS_TP
 
+
+#endif
 }
 
 
