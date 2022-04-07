@@ -8,31 +8,22 @@ Routines for the page fault managerPage Fault Manager
 
 //  Copyright (c) 1999-2000 INSA de Rennes.
 
-//  All rights reserved.  
+//  All rights reserved.
 
-//  See copyright_insa.h for copyright notice and limitation 
+//  See copyright_insa.h for copyright notice and limitation
 
 //  of liability and disclaimer of warranty provisions.
 
 //
 
-
-
-#include "kernel/thread.h"
-
-#include "vm/swapManager.h"
-
-#include "vm/physMem.h"
-
 #include "vm/pagefaultmanager.h"
 
-
+#include "kernel/thread.h"
+#include "vm/physMem.h"
+#include "vm/swapManager.h"
 
 PageFaultManager::PageFaultManager() {
-
 }
-
-
 
 // PageFaultManager::~PageFaultManager()
 
@@ -41,16 +32,13 @@ PageFaultManager::PageFaultManager() {
 */
 
 PageFaultManager::~PageFaultManager() {
-
 }
-
-
 
 // ExceptionType PageFault(uint32_t virtualPage)
 
-/*! 	
+/*!
 
-//	This method is called by the Memory Management Unit when there is a 
+//	This method is called by the Memory Management Unit when there is a
 
 //      page fault. This method loads the page from :
 
@@ -78,59 +66,40 @@ PageFaultManager::~PageFaultManager() {
 
 //	\return the exception (generally the NO_EXCEPTION constant)
 
-*/  
+*/
 
-ExceptionType PageFaultManager::PageFault(uint32_t virtualPage) 
+ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
 
-{   
-    auto translationTable =  g_machine->mmu->translationTable;
+{
+    auto translationTable = g_machine->mmu->translationTable;
     auto inSwap = translationTable->getBitSwap(virtualPage);
-    int diskAddr= translationTable->getAddrDisk(virtualPage);
-    int np = g_physical_mem_manager->AddPhysicalToVirtualMapping(g_current_thread->GetProcessOwner()->addrspace,virtualPage);
-    g_machine->mmu->translationTable->setPhysicalPage(virtualPage,np);
-    g_machine->mmu->translationTable->setBitValid(virtualPage);
-    
-    printf("virtual page : %d\n",virtualPage);
-    
-    if(inSwap){
-        //Page load from the swap
-        while(diskAddr==-1) {
-          g_current_thread->Yield();
-          diskAddr= translationTable->getAddrDisk(virtualPage);
+    int diskAddr = translationTable->getAddrDisk(virtualPage);
+    int np = g_physical_mem_manager->AddPhysicalToVirtualMapping(g_current_thread->GetProcessOwner()->addrspace, virtualPage);
+    g_machine->mmu->translationTable->setPhysicalPage(virtualPage, np);
+
+
+    if (inSwap) {
+        // Page load from the swap
+        while (diskAddr == -1) {
+            g_current_thread->Yield();
+            diskAddr = translationTable->getAddrDisk(virtualPage);
         }
         char buff[g_cfg->PageSize];
-        g_swap_manager->GetPageSwap(diskAddr,buff);        
-        memcpy(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),  buff, g_cfg->PageSize);
-        printf("ok ? 11\n");
-        
-        
+        g_swap_manager->GetPageSwap(diskAddr, buff);
+        memcpy(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage) * g_cfg->PageSize]), buff, g_cfg->PageSize);
 
-    }
-    else if ( (!inSwap) && (diskAddr == -1) ) {
-      
-        //anonymous page
-        printf("ici anonymus\n");
-        bzero(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),g_cfg->PageSize);
-        
-          
-    }else {
-        // load from the exec file 
-        printf("ici exec\n");
+    } else if ((!inSwap) && (diskAddr == -1)) {
+        // anonymous page
+        bzero(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage) * g_cfg->PageSize]), g_cfg->PageSize);
+
+    } else {
+        // load from the exec file
         auto exec_file = g_current_thread->GetProcessOwner()->exec_file;
-       exec_file->ReadAt((char *)&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),g_cfg->PageSize, np*g_cfg->PageSize );
+        exec_file->ReadAt((char *)&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage) * g_cfg->PageSize]), g_cfg->PageSize, diskAddr);
     }
-    printf("ici fin\n");
-    translationTable->setBitIo(virtualPage);
-    
+    //translationTable->setBitIo(virtualPage);
+
+    g_machine->mmu->translationTable->setBitValid(virtualPage);
+
     return NO_EXCEPTION;
-
 }
-
-
-
-
-
-
-
-
-

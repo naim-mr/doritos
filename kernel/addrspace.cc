@@ -443,7 +443,17 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
 
 	  translationTable->clearBitIo(virt_page);
 
-    translationTable->setAddrDisk(virt_page,-1);
+    if (section_table[i].sh_type != SHT_NOBITS) {
+
+	    translationTable->setAddrDisk(virt_page,section_table[i].sh_offset + pgdisk*g_cfg->PageSize);
+
+	  } else {
+
+	    translationTable->setAddrDisk(virt_page,-1);
+
+	  }
+
+    
 
     translationTable->clearBitValid(virt_page);
     #endif
