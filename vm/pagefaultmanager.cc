@@ -75,11 +75,16 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
 
     auto translationTable = g_machine->mmu->translationTable;
 
+
+    auto oldInt = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
     while (translationTable->getBitIo(virtualPage))
     {
-      g_current_thread->Yield();
+        g_machine->interrupt->SetStatus(oldInt);
+        g_current_thread->Yield();
+        oldInt = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
     }
     translationTable->setBitIo(virtualPage);
+    g_machine->interrupt->SetStatus(oldInt);
 
     auto inSwap = translationTable->getBitSwap(virtualPage);
     int diskAddr = translationTable->getAddrDisk(virtualPage);
@@ -96,7 +101,8 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
         char buff[g_cfg->PageSize];
         g_swap_manager->GetPageSwap(diskAddr, buff);
         memcpy(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage) * g_cfg->PageSize]), buff, g_cfg->PageSize);
-
+        translationTable->clearBitSwap(virtualPage);
+        g_swap_manager->ReleasePageSwap(diskAddr);
     } else if ((!inSwap) && (diskAddr == -1)) {
         // anonymous page
         bzero(&(g_machine->mainMemory[translationTable->getPhysicalPage(virtualPage) * g_cfg->PageSize]), g_cfg->PageSize);

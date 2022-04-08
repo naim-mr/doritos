@@ -441,7 +441,7 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
       translationTable->clearBitWriteAllowed(virt_page);
     } 
 
-	  translationTable->clearBitIo(virt_page);
+	  
 
     if (section_table[i].sh_type != SHT_NOBITS) {
 
@@ -453,7 +453,7 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
 
 	  }
 
-    
+    translationTable->clearBitIo(virt_page);
 
     translationTable->clearBitValid(virt_page);
     #endif
