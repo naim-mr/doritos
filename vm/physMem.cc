@@ -304,31 +304,26 @@ int PhysicalMemManager::EvictPage() {
 
         auto U = g_machine->mmu->translationTable->getBitU(tpr[local_iclock].virtualPage);
         if (U == false) {
-            auto oldInt = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
             if (tpr[local_iclock].locked == false) {
                 tpr[local_iclock].locked = true;
                 DEBUG('v', "Virtual page number : %d | Physical page number : %d\n", tpr[local_iclock].virtualPage, local_iclock);
                 while (g_machine->mmu->translationTable->getBitIo(tpr[local_iclock].virtualPage))
                 {
-                    g_machine->interrupt->SetStatus(oldInt);
                     g_current_thread->Yield();
-                    oldInt = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
                 }
                 g_machine->mmu->translationTable->setBitIo(tpr[local_iclock].virtualPage);
-                g_machine->interrupt->SetStatus(oldInt);
 
                 i_clock = local_iclock;
-                numSwapSector = g_swap_manager->PutPageSwap(
-                    -1,
+                numSwapSector = g_swap_manager->PutPageSwap(-1,
                     (char*)&(g_machine->mainMemory[g_machine->mmu->translationTable->getPhysicalPage(tpr[local_iclock].virtualPage) * g_cfg->PageSize]));
                 fullLocked = false;
-                g_machine->mmu->translationTable->setAddrDisk(tpr[local_iclock].virtualPage,numSwapSector);
+                g_machine->mmu->translationTable->setAddrDisk(tpr[local_iclock].virtualPage, numSwapSector);
                 g_machine->mmu->translationTable->setBitSwap(tpr[local_iclock].virtualPage);
                 g_machine->mmu->translationTable->clearBitValid(tpr[local_iclock].virtualPage);
                 g_machine->mmu->translationTable->clearBitIo(tpr[local_iclock].virtualPage);
+                
                 break;
             }
-            g_machine->interrupt->SetStatus(oldInt);
         }
         g_machine->mmu->translationTable->clearBitU(tpr[local_iclock].virtualPage);
       
