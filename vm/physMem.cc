@@ -210,6 +210,7 @@ int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner, int virtua
 #ifdef ETUDIANTS_TP
     int np = FindFreePage();
     if (np != -1) {
+        ASSERT(tpr[np].locked == false);
         tpr[np].locked = true;
     } else {
         np = EvictPage();
@@ -296,31 +297,31 @@ int PhysicalMemManager::EvictPage() {
     return (0);
 #endif
 #ifdef ETUDIANTS_TP
-    int res = -1;
+    int numSwapSector = -1;
     auto fullLocked = true;
-    int local_iclock=(i_clock+1)%g_cfg->NumPhysPages;
+    int local_iclock = (i_clock+1)%g_cfg->NumPhysPages;
     while(local_iclock != i_clock) {
 
         auto U = g_machine->mmu->translationTable->getBitU(tpr[local_iclock].virtualPage);
         if (U == false) {
             if (tpr[local_iclock].locked == false) {
                 tpr[local_iclock].locked = true;
-                i_clock= local_iclock;
-                res = g_swap_manager->PutPageSwap(
+                i_clock = local_iclock;
+                numSwapSector = g_swap_manager->PutPageSwap(
                     g_machine->mmu->translationTable->getAddrDisk(tpr[local_iclock].virtualPage),
                     (char*)&(g_machine->mainMemory[g_machine->mmu->translationTable->getPhysicalPage(tpr[local_iclock].virtualPage) * g_cfg->PageSize]));
                 fullLocked = false;
-                g_machine->mmu->translationTable->setAddrDisk(tpr[local_iclock].virtualPage,res);
+                g_machine->mmu->translationTable->setAddrDisk(tpr[local_iclock].virtualPage,numSwapSector);
                 g_machine->mmu->translationTable->setBitSwap(tpr[local_iclock].virtualPage);
                 g_machine->mmu->translationTable->clearBitValid(tpr[local_iclock].virtualPage);
               
                 break;
             }
         }
-      g_machine->mmu->translationTable->clearBitU(tpr[local_iclock].virtualPage);
+        g_machine->mmu->translationTable->clearBitU(tpr[local_iclock].virtualPage);
       
       
-      local_iclock= (local_iclock +1)%g_cfg->NumPhysPages;
+      local_iclock = (local_iclock +1)%g_cfg->NumPhysPages;
     }
     
     if (fullLocked) {
