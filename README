@@ -1,3 +1,10 @@
+Mirror repo of an OS Kernel Implementation. Did with @phoudail during a course project. 
+
+
+
+--------------------------------------------------------------------------
+S H O R T       D E S C R I P T I O N      
+--------------------------------------------------------------------------
 This directory contains the source code and documentation
 of the Nachos instructional operating system. Nachos was
 designed by the University of Berkeley (see kernel/copyright.h
